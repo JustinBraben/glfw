@@ -17,19 +17,19 @@ pub fn build(b: *std.Build) void {
     const use_gles = b.option(bool, "gles", "Build with GLES; not supported on MacOS") orelse false;
     const use_metal = b.option(bool, "metal", "Build with Metal; only supported on MacOS") orelse false;
 
-    const lib: *std.Build.Step.Compile = switch (shared) {
-        inline else => |x| switch (x) {
-            false => std.Build.addStaticLibrary,
-            true => std.Build.addSharedLibrary,
-        }(b, .{
-            .name = "glfw",
-            .target = target,
-            .optimize = optimize,
-        }),
-    };
+    const glfw_mod = b.addModule("glfw", .{
+        .target = target,
+        .optimize = optimize,
+        .link_libc = true,
+    });
+    const lib = b.addLibrary(.{ 
+        .name = "glfw",
+        .root_module = glfw_mod,
+        .linkage = if (shared) .dynamic else .static,
+    });
     lib.addIncludePath(b.path("include"));
-    //if (include_src) lib.addIncludePath(b.path("src"));
-    lib.linkLibC();
+    // if (include_src) lib.addIncludePath(b.path("src"));
+    // lib.linkLibC();
 
     if (shared) lib.root_module.addCMacro("_GLFW_BUILD_DLL", "1");
 
