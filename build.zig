@@ -122,6 +122,7 @@ pub fn build(b: *std.Build) void {
             lib.linkFramework("CoreServices");
             lib.linkFramework("CoreGraphics");
             lib.linkFramework("Foundation");
+            lib.linkFramework("QuartzCore");
 
             if (use_metal) {
                 lib.linkFramework("Metal");
