@@ -2,6 +2,7 @@
     .name = .glfw,
     .version = "0.0.0",
     .fingerprint = 0x3bbe0a5c521e9047,
+    .minimum_zig_version = "0.15.1",
     .paths = .{
         "include/",
         "src/",
@@ -16,7 +17,7 @@
             .lazy = true,
         },
         .vulkan_headers = .{
-            .url = "https://github.com/Batres3/vulkan-headers/archive/16dd91847f1b4ad2ac12578abca7596c3cecdab6.zip",
+            .url = "https://github.com/Batres3/vulkan-headers/archive/642b39a1f86f6f92ccdaaa52dc6106d59b7d92e2.zip",
             .hash = "N-V-__8AAP4fFgE5rrh9TTp1H6c3Zqao6Cb_OYmRHQrOr4pY",
             .lazy = true,
         },
@@ -26,7 +27,7 @@
             .lazy = true,
         },
         .x11_headers = .{
-            .url = "https://github.com/Batres3/x11-headers/archive/80dba49598570c241d2c0ba5ac045a2951d45cad.zip",
+            .url = "https://github.com/Batres3/x11-headers/archive/d85c0aed3f1ecc138c994ae00bb745c4cba9e574.zip",
             .hash = "N-V-__8AABeUQgAUPAOubtaj8TZjdxYJ1rGLi4xxLDErTFwt",
             .lazy = true,
         },

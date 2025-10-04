@@ -17,19 +17,20 @@ pub fn build(b: *std.Build) void {
     const use_gles = b.option(bool, "gles", "Build with GLES; not supported on MacOS") orelse false;
     const use_metal = b.option(bool, "metal", "Build with Metal; only supported on MacOS") orelse false;
 
-    const lib: *std.Build.Step.Compile = switch (shared) {
-        inline else => |x| switch (x) {
-            false => std.Build.addStaticLibrary,
-            true => std.Build.addSharedLibrary,
-        }(b, .{
-            .name = "glfw",
+    const lib: *std.Build.Step.Compile = b.addLibrary(.{
+        .name = "glfw",
+        .root_module = b.createModule(.{
             .target = target,
             .optimize = optimize,
+            .link_libc = true,
         }),
-    };
-    lib.addIncludePath(b.path("include"));
+        .linkage = switch (shared) {
+            false => .static,
+            true => .dynamic,
+        },
+    });
+    lib.root_module.addIncludePath(b.path("include"));
     //if (include_src) lib.addIncludePath(b.path("src"));
-    lib.linkLibC();
 
     if (shared) lib.root_module.addCMacro("_GLFW_BUILD_DLL", "1");
 
@@ -54,12 +55,12 @@ pub fn build(b: *std.Build) void {
                 .target = target,
                 .optimize = optimize,
             })) |dep| {
-                lib.linkLibrary(dep.artifact("x11-headers"));
+                lib.root_module.linkLibrary(dep.artifact("x11-headers"));
                 lib.installLibraryHeaders(dep.artifact("x11-headers"));
             }
             if (b.lazyDependency("wayland_headers", .{})) |dep| {
-                lib.addIncludePath(dep.path("wayland"));
-                lib.addIncludePath(dep.path("wayland-protocols"));
+                lib.root_module.addIncludePath(dep.path("wayland"));
+                lib.root_module.addIncludePath(dep.path("wayland-protocols"));
                 lib.installHeadersDirectory(dep.path("wayland"), ".", .{});
                 lib.installHeadersDirectory(dep.path("wayland-protocols"), ".", .{});
             }
@@ -83,70 +84,70 @@ pub fn build(b: *std.Build) void {
     //
     // Source files
     //
-    lib.addCSourceFiles(.{
+    lib.root_module.addCSourceFiles(.{
         .files = &base_sources,
     });
     switch (target.result.os.tag) {
         .windows => {
-            lib.linkSystemLibrary("gdi32");
-            lib.linkSystemLibrary("user32");
-            lib.linkSystemLibrary("shell32");
+            lib.root_module.linkSystemLibrary("gdi32", .{});
+            lib.root_module.linkSystemLibrary("user32", .{});
+            lib.root_module.linkSystemLibrary("shell32", .{});
 
             if (use_opengl) {
-                lib.linkSystemLibrary("opengl32");
+                lib.root_module.linkSystemLibrary("opengl32", .{});
             }
 
             if (use_gles) {
-                lib.linkSystemLibrary("GLESv3");
+                lib.root_module.linkSystemLibrary("GLESv3", .{});
             }
 
             lib.root_module.addCMacro("_GLFW_WIN32", "1");
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .files = &windows_sources,
             });
         },
         .macos => {
             // Transitive dependencies, explicit linkage of these works around
             // ziglang/zig#17130
-            lib.linkFramework("CFNetwork");
-            lib.linkFramework("ApplicationServices");
-            lib.linkFramework("ColorSync");
-            lib.linkFramework("CoreText");
-            lib.linkFramework("ImageIO");
+            lib.root_module.linkFramework("CFNetwork", .{});
+            lib.root_module.linkFramework("ApplicationServices", .{});
+            lib.root_module.linkFramework("ColorSync", .{});
+            lib.root_module.linkFramework("CoreText", .{});
+            lib.root_module.linkFramework("ImageIO", .{});
 
             // Direct dependencies
-            lib.linkSystemLibrary("objc");
-            lib.linkFramework("IOKit");
-            lib.linkFramework("CoreFoundation");
-            lib.linkFramework("AppKit");
-            lib.linkFramework("CoreServices");
-            lib.linkFramework("CoreGraphics");
-            lib.linkFramework("Foundation");
-            lib.linkFramework("QuartzCore");
+            lib.root_module.linkSystemLibrary("objc", .{});
+            lib.root_module.linkFramework("IOKit", .{});
+            lib.root_module.linkFramework("CoreFoundation", .{});
+            lib.root_module.linkFramework("AppKit", .{});
+            lib.root_module.linkFramework("CoreServices", .{});
+            lib.root_module.linkFramework("CoreGraphics", .{});
+            lib.root_module.linkFramework("Foundation", .{});
+            lib.root_module.linkFramework("QuartzCore", .{});
 
             if (use_metal) {
-                lib.linkFramework("Metal");
+                lib.root_module.linkFramework("Metal", .{});
             }
 
             if (use_opengl) {
-                lib.linkFramework("OpenGL");
+                lib.root_module.linkFramework("OpenGL", .{});
             }
 
             lib.root_module.addCMacro("_GLFW_COCOA", "1");
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .files = &macos_sources,
             });
         },
 
         // everything that isn't windows or mac is linux :P
         else => {
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .files = &linux_sources,
             });
 
             if (use_x11) {
                 lib.root_module.addCMacro("_GLFW_X11", "1");
-                lib.addCSourceFiles(.{
+                lib.root_module.addCSourceFiles(.{
                     .files = &linux_x11_sources,
                 });
             }
@@ -154,7 +155,7 @@ pub fn build(b: *std.Build) void {
             if (use_wl) {
                 lib.root_module.addCMacro("_GLFW_WAYLAND", "1");
 
-                lib.addCSourceFiles(.{
+                lib.root_module.addCSourceFiles(.{
                     .files = &linux_wl_sources,
                     .flags = &.{
                         "-Wno-implicit-function-declaration",
