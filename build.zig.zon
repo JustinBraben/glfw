@@ -18,7 +18,7 @@
         },
         .vulkan_headers = .{
             .url = "https://github.com/Batres3/vulkan-headers/archive/642b39a1f86f6f92ccdaaa52dc6106d59b7d92e2.zip",
-            .hash = "N-V-__8AAP4fFgE5rrh9TTp1H6c3Zqao6Cb_OYmRHQrOr4pY",
+            .hash = "N-V-__8AAKEVFgGMrBjuxZ7669nPxcOc-dtUYqNhpsa355NL",
             .lazy = true,
         },
         .wayland_headers = .{
@@ -28,7 +28,7 @@
         },
         .x11_headers = .{
             .url = "https://github.com/Batres3/x11-headers/archive/d85c0aed3f1ecc138c994ae00bb745c4cba9e574.zip",
-            .hash = "N-V-__8AABeUQgAUPAOubtaj8TZjdxYJ1rGLi4xxLDErTFwt",
+            .hash = "N-V-__8AAIyUQgB3B5VLoRxZ6OIasJUeaUSD3c6U2Tjhe7TZ",
             .lazy = true,
         },
     },
